@@ -81,6 +81,26 @@ const getAllPets = async (req, res) => {
     }
 };
 
+// CRUD dos Pacientes
+
+const createPatients = async (req, res) => {
+    const { admission, at_arrival_patient_status, injuries, medicated_at_arrival, contagious, pet_id, role_id } = req.body;
+
+    try {
+        const result = await pool.query(
+            `INSERT INTO patient (admission, at_arrival_patient_status, injuries, medicated_at_arrival, contagious, pet_id, role_id) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7) 
+             RETURNING *`,
+            [admission, at_arrival_patient_status, injuries, medicated_at_arrival, contagious, pet_id, role_id]
+        );
+
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Erro ao criar o paciente");
+    }
+};
+
 const getAllPatients = async (req, res) => {
     try {
         const result = await pool.query("SELECT * FROM patient");
@@ -90,6 +110,55 @@ const getAllPatients = async (req, res) => {
         res.status(500).send("Erro ao consultar os pacientes");
     }
 };
+
+const updatePatients = async (req, res) => {
+    const { id } = req.params;
+    const { admission, at_arrival_patient_status, injuries, medicated_at_arrival, contagious, pet_id, role_id } = req.body;
+
+    try {
+        const result = await pool.query(
+            `UPDATE patient 
+             SET admission = $1, 
+                 at_arrival_patient_status = $2, 
+                 injuries = $3, 
+                 medicated_at_arrival = $4, 
+                 contagious = $5, 
+                 pet_id = $6, 
+                 role_id = $7 
+             WHERE id = $8 
+             RETURNING *`,
+            [admission, at_arrival_patient_status, injuries, medicated_at_arrival, contagious, pet_id, role_id, id]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).send("Paciente não encontrado");
+        }
+
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Erro ao atualizar o paciente");
+    }
+};
+
+
+const deletePatients = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const result = await pool.query("DELETE FROM patient WHERE id= $1", [id]);
+
+        if (result.rowCount === 0) {
+            return res.status(404).send("Paciente não encontrado");
+        }
+
+        res.status(204).send();
+    } catch(err) {
+        console.error(err);
+        res.status(500).send("Erro ao deletar o paciente");
+    }
+};
+// Fim do CRUD dos Pacientes
 
 const getAllCages = async (req, res) => {
     try {
@@ -136,7 +205,10 @@ module.exports = {
     getAllPeopleData,
     getAllPersonRegister,
     getAllPets,
+    createPatients,
     getAllPatients,
+    updatePatients,
+    deletePatients,
     getAllCages,
     getAllTreatments,
     getAllMedications,

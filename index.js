@@ -4,6 +4,7 @@ const app = express();
 const port = 3000;
 const dataRoutes = require('./routes/dataRoutes');
 
+app.use(express.json());
 app.use('/api', dataRoutes);
 
 app.listen(port, () => {

@@ -2,6 +2,6 @@
 
 # Render
 
-# PostGre
+# PostGreSQL
 
 # API
